@@ -10,4 +10,8 @@ public interface IClienteService
     public List<Cliente> findAll();
 
     public Optional<Cliente> findById(Long id);
+
+    public Cliente save(Cliente cliente);
+
+    public void deleteById(Long id);
 }
