@@ -25,7 +25,7 @@ public class Cliente implements Serializable {
 	private Long id;
 	
 	
-	private String name;
+	private String nombre;
 	private String apellido;
 	private String email;
 	
@@ -41,12 +41,12 @@ public class Cliente implements Serializable {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getNombre() {
+		return nombre;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setNombre(String nombre) {
+		this.nombre = nombre;
 	}
 
 	public String getApellido() {
