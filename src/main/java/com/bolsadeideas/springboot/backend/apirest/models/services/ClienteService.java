@@ -28,4 +28,16 @@ public class ClienteService implements IClienteService
     public Optional<Cliente> findById(Long id) {
         return clienteDao.findById(id);
     }
+
+    @Override
+    @Transactional
+    public Cliente save(Cliente cliente) {
+        return clienteDao.save(cliente);
+    }
+
+    @Override
+    @Transactional
+    public void deleteById(Long id) {
+        clienteDao.deleteById(id);
+    }
 }
