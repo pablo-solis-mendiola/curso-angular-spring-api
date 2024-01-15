@@ -122,13 +122,25 @@ public class ClienteRestController {
     }
 
     @PutMapping("/clientes/{id}")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Cliente clienteActualizado) {
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Cliente datosCliente) {
         Map<String, Object> response = new HashMap<>();
-        Cliente cliente = null;
+        Cliente clienteExistente = clienteService.findById(id);
+        Cliente clienteActualizado = null;
+
+        if (clienteExistente == null) {
+            response.put("mensaje", "No se ha encontrado al cliente con id " + id.toString() + " en nuestros registros");
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+        }
+
+        String nombre = (datosCliente.getNombre() == null) ? clienteExistente.getNombre() : datosCliente.getNombre();
+        String apellido = (datosCliente.getApellido() == null) ? clienteExistente.getApellido() : datosCliente.getApellido();
+        String email = (datosCliente.getEmail() == null) ? clienteExistente.getEmail() : datosCliente.getEmail();
         
         try {
-            cliente = clienteService.findById(id);
+            clienteExistente.setNombre(nombre);
+            clienteExistente.setApellido(apellido);
+            clienteExistente.setEmail(email);
+            clienteActualizado = clienteService.save(clienteExistente);
 
         } catch(DataAccessException ex) {
             response.put("mensaje", "Ocurrio un error en la operación");
@@ -137,29 +149,26 @@ public class ClienteRestController {
             return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        if (cliente == null) {
-            response.put("mensaje", "No se ha encontrado al cliente con id " + id.toString() + " en nuestros registros");
-            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-        }
-
-        String nombre = (clienteActualizado.getNombre() == null) ? cliente.getNombre() : clienteActualizado.getNombre();
-        String apellido = (clienteActualizado.getApellido() == null) ? cliente.getApellido() : clienteActualizado.getApellido();
-        String email = (clienteActualizado.getEmail() == null) ? cliente.getEmail() : clienteActualizado.getEmail();
-
-        cliente.setNombre(nombre);
-        cliente.setApellido(apellido);
-        cliente.setEmail(email);
-        clienteService.save(cliente);
-
-        response.put("mensaje", "Cliente Actualizado correctamente");
-        response.put("data", cliente);
+        response.put("mensaje", "Cliente actualizado correctamente");
+        response.put("data", clienteActualizado);
 
         return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/clientes/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void destroy(@PathVariable Long id) {
-        clienteService.deleteById(id);
+    public ResponseEntity<?> destroy(@PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            clienteService.deleteById(id);
+
+        } catch(DataAccessException ex) {
+            response.put("mensaje", "Se produjo un error al eliminar el cliente con id "+ id);
+
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        response.put("mensaje", "Cliente eliminado correctamente");
+        return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
     }
 }
