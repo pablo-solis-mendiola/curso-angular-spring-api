@@ -3,11 +3,15 @@ package com.bolsadeideas.springboot.backend.apirest.controllers;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +25,7 @@ import com.bolsadeideas.springboot.backend.apirest.models.entity.Cliente;
 import com.bolsadeideas.springboot.backend.apirest.models.services.IClienteService;
 
 import exceptions.ClienteNotFoundException;
+import jakarta.validation.Valid;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -100,10 +105,20 @@ public class ClienteRestController {
     // }
 
     @PostMapping("/clientes")
-    public ResponseEntity<?> store(@RequestBody Cliente cliente) {
+    public ResponseEntity<?> store(@Valid @RequestBody Cliente cliente, BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         Cliente newCliente;
 
+        if (result.hasErrors()) {
+          List<String> errors = result.getFieldErrors()
+              .stream()
+              .map((FieldError error) -> "El campo '" + error.getField() + "' es invalido: " + error.getDefaultMessage())
+              .collect(Collectors.toList());
+
+          response.put("errors", errors);
+          return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+        }
+        
         try {
             newCliente = clienteService.save(cliente);
 
@@ -122,7 +137,7 @@ public class ClienteRestController {
     }
 
     @PutMapping("/clientes/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Cliente datosCliente) {
+    public ResponseEntity<?> update(@Valid @RequestBody Cliente datosCliente, BindingResult result, @PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
         Cliente clienteExistente = clienteService.findById(id);
         Cliente clienteActualizado = null;
@@ -130,6 +145,17 @@ public class ClienteRestController {
         if (clienteExistente == null) {
             response.put("mensaje", "No se ha encontrado al cliente con id " + id.toString() + " en nuestros registros");
             return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+        }
+
+        if (result.hasErrors()) {
+          List<String> errors = result.getFieldErrors()
+              .stream()
+              .map((FieldError error) -> "El campo '" + error.getField() + "' es invalido: " + error.getDefaultMessage())
+              .collect(Collectors.toList());
+
+          response.put("errors", errors);
+          return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+
         }
 
         String nombre = (datosCliente.getNombre() == null) ? clienteExistente.getNombre() : datosCliente.getNombre();
