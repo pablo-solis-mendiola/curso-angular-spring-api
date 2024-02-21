@@ -19,6 +19,14 @@ import jakarta.validation.constraints.Size;
 @Entity
 @Table(name="clientes")
 public class Cliente implements Serializable {
+
+  /**
+   * Mensajes de error de validación
+   */
+  private final String EMPTY_FIELD_ERROR_MSG = "Este campo no puede estar vacío";
+  private final String EMAIL_FORMAT_ERROR_MSG = "El formato de email es incorrecto";
+  private final String TEXT_SIZE_ERROR_MSG = "El tamaño del texto debe ser de entre {min} y {max} caracteres";
+
 	/**
 	 * 
 	 */
@@ -28,17 +36,17 @@ public class Cliente implements Serializable {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@NotEmpty
-  @Size(min=4, max=12)
+	@NotEmpty(message = EMPTY_FIELD_ERROR_MSG)
+  @Size(min=4, max=12, message = TEXT_SIZE_ERROR_MSG)
   @Column(nullable = false)
 	private String nombre;
-
-  @NotEmpty
+ 
+  @NotEmpty(message = EMPTY_FIELD_ERROR_MSG)
   @Column(nullable = false)
 	private String apellido;
 
-  @NotEmpty
-  @Email
+  @NotEmpty(message = EMPTY_FIELD_ERROR_MSG)
+  @Email(message = EMAIL_FORMAT_ERROR_MSG)
   @Column(nullable = false, unique = true)
 	private String email;
 	
